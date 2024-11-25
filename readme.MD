@@ -23,19 +23,14 @@ Le code est fourni tel quel, sans garantie d'aucune sorte. En utilisant ce proje
     cd riot-games-webscrap
     ```
 
-2. Installer les dépendances :
-    ```bash
-    pip install -r requirements.txt
-    ```
-
-3. Télécharger **ChromeDriver** compatible avec votre version de Chrome et l'ajouter à votre PATH.
+2. Télécharger **ChromeDriver** compatible avec votre version de Chrome et l'ajouter à votre PATH.
 
 ## Utilisation
 
 1. Modifier les catégories de produits si nécessaire dans le fichier Python (voir `categories = [...]`).
 2. Exécuter le script :
     ```bash
-    python scrape_riot_merch.py
+    python main.py
     ```
 
 3. Les informations sur les produits seront sauvegardées dans un fichier `products.json`.
