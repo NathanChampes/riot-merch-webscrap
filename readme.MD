@@ -19,7 +19,7 @@ Le code est fourni tel quel, sans garantie d'aucune sorte. En utilisant ce proje
 
 1. Cloner ce repository :
     ```bash
-    git clone https://github.com/votre-utilisateur/riot-games-webscrap.git
+    git clone https://github.com/NathanChampes/riot-merch-webscrap
     cd riot-games-webscrap
     ```
 
