@@ -35,12 +35,6 @@ for category in tqdm(categories, desc="Traitement des catégories"):
     driver.get(url)
     while True:
         try:
-            #load_more_button = WebDriverWait(driver, 10).until(
-            #EC.element_to_be_clickable((By.CSS_SELECTOR, "button.button_button__52Aro.button_button--variant--primary__9pWMF.button_button--theme--default__QzKIY"))
-            #)
-            #load_more_button.click()
-            
-            # Attendre et cliquer sur un éventuel second bouton
             secondary_button = WebDriverWait(driver, 5).until(
                 EC.element_to_be_clickable((By.XPATH, "/html/body/div[2]/main/section/div/div/button"))
             )
@@ -49,30 +43,47 @@ for category in tqdm(categories, desc="Traitement des catégories"):
             print("Plus de bouton") 
             print("Changement de catégorie")
             break
-    product_cards = driver.find_elements(By.CSS_SELECTOR, "article.product-card_product-card__LIKK8")
+    product_cards = WebDriverWait(driver, 10).until(
+        EC.presence_of_all_elements_located((By.CSS_SELECTOR, "article.product-card_product-card__LIKK8"))
+    )
 
     for card in tqdm(product_cards, desc="Traitement des produits"):
-        product_url = card.find_element(By.CSS_SELECTOR, "a.product-card_product-link__6pYsY").get_attribute("href")
-        product_name = card.find_element(By.CSS_SELECTOR, "a.product-card_product-link__6pYsY").get_attribute("aria-label").replace("Voir ", "")
-        product_price = card.find_element(By.CSS_SELECTOR, "span.text_text__84aqk.text-span.text-body.text_text--size--rg__GF7_L.add-to-cart-panel_panel-header__subheading__m_kc_").text
         try:
-            limited_edition_elements = card.find_elements(By.CSS_SELECTOR, "span.tag_tag__ew8Dg.tag_tag--size--sm__EU94h")
-            limited_edition = [element.text for element in limited_edition_elements]
-        except Exception:
-            limited_edition = None
-        try:
-            image_elements = card.find_elements(By.CSS_SELECTOR, "div.image_image__AxgoZ.product-card_image-item__RuQVM > img")
-            product_images = [img.get_attribute("src") for img in image_elements]
-        except Exception:
-            product_image = None
-        all_products.append({
-            "name": product_name,
-            "url": product_url,
-            "price": product_price,
-            "limited_edition": limited_edition,
-            "category": category,
-            "image": product_images
-        })
+            product_url = card.find_element(By.CSS_SELECTOR, "a.product-card_product-link__6pYsY").get_attribute("href")
+            product_name = card.find_element(By.CSS_SELECTOR, "a.product-card_product-link__6pYsY").get_attribute("aria-label").replace("Voir ", "")
+            product_price = card.find_element(By.CSS_SELECTOR, "span.text_text__84aqk.text-span.text-body.text_text--size--rg__GF7_L.add-to-cart-panel_panel-header__subheading__m_kc_").text
+        
+            try:
+                image_elements = card.find_elements(By.CSS_SELECTOR, "div.image_image__AxgoZ.product-card_image-item__RuQVM > img")
+                product_images = [img.get_attribute("src") for img in image_elements]
+            except Exception:
+                product_image = None
+            driver.execute_script("window.open('');")
+            driver.switch_to.window(driver.window_handles[1])
+            driver.get(product_url)
+            try:
+                description_elements = WebDriverWait(driver, 10).until(
+                    EC.presence_of_all_elements_located((By.CSS_SELECTOR, "div.rich-text_rich-text__kqTqi > p"))
+                )
+                product_description = "\n".join([elem.text for elem in description_elements])
+                list_elements = driver.find_elements(By.CSS_SELECTOR, "div.rich-text_rich-text__kqTqi ul > li")
+                if list_elements:
+                    product_description += "\n" + "\n".join([li.text for li in list_elements])
+            except Exception:
+                product_description = None
+            driver.close()
+            driver.switch_to.window(driver.window_handles[0])
+            
+            all_products.append({
+                "name": product_name,
+                "url": product_url,
+                "price": product_price,
+                "category": category,
+                "image": product_images,
+                "description": product_description
+            })
+        except Exception as e:
+            print(f"Erreur lors du traitement du produit: {e}")
 
         with open("products.json", "w") as file:
             json.dump(all_products, file, indent=4, ensure_ascii=False)
